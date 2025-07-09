@@ -39,9 +39,13 @@ class BrainTumourDataset(Dataset):
         # Augmentation makes the model more robust by showing it modified images
         if self.is_train:
             transform_steps.extend([
-                transforms.RandomRotation(7),          # Rotate by up to 7 degrees
-                transforms.RandomHorizontalFlip(),     # Flip horizontally
-                transforms.RandomVerticalFlip(),       # Flip vertically
+                transforms.RandomRotation(degrees=7),
+                transforms.RandomHorizontalFlip(p=0.5),
+                transforms.RandomVerticalFlip(p=0.5),
+                transforms.RandomAffine(degrees=0, translate=(0.05, 0.05)), # Width/Height shifts of ±5%
+                transforms.RandomResizedCrop(size=224, scale=(0.9, 1.1)), # Zoom of ±10%
+                transforms.ColorJitter(brightness=0.1, contrast=0.1) # Brightness changes
+    
             ])
 
         # Add final steps for all images
@@ -59,10 +63,9 @@ class BrainTumourDataset(Dataset):
 
     def __getitem__(self, index):
         """Gets a single image and its label by index."""
-        # Construct the full path to the image file
+       
         filepath = os.path.join(self.data_folder, self.filenames[index])
 
-        # Open the .mat file and get the image data
         with h5py.File(filepath, "r") as f:
             image = f["cjdata"]["image"][()] # [()] extracts the data as a NumPy array
 
