@@ -136,6 +136,18 @@ def main(args):
                 if epochs_without_improvement >= args.patience:
                     print(f"  -> EARLY STOPPING triggered after {args.patience} epochs without improvement.")
                     break
+       
+       # Create the base filename
+        file_prefix = f"{args.model}_{args.strategy}_{args.optimizer}"
+        
+        # Only add the learning rate if the optimizer uses it
+        if args.optimizer != 'adadelta':
+            file_prefix += f"_lr-{args.lr}"
+            
+        save_path = f"fold_{fold_num}_{file_prefix}_best_model.pth"
+        
+        torch.save(best_model_state, save_path)
+        print(f"  -> Best model for fold {fold_num} saved to {save_path}")
 
         print("\nTesting the best model...")
         test_pbar = tqdm(test_loader, desc="Testing")
